@@ -1,0 +1,18 @@
+schema: '2.0'
+stages:
+  data_cleaning:
+    cmd: python src/data/data_cleaning.py
+    deps:
+    - path: data/raw/India-Food-Delivery-Time-Prediction.txt
+      hash: md5
+      md5: 54e7d50bd406c613293a3569aac8fa78
+      size: 31506349
+    - path: src/data/data_cleaning.py
+      hash: md5
+      md5: 97719a0ae11ec5bc43fa880b31fad911
+      size: 9617
+    outs:
+    - path: data/cleaned/Food-Delivery-Time-Prediction_cleaned.csv
+      hash: md5
+      md5: 8c70b3815b7addae56e2ccd83f01c59d
+      size: 4606897

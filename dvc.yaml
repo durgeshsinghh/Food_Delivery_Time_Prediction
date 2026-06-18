@@ -1,0 +1,8 @@
+stages:
+  data_cleaning:
+    cmd: python src/data/data_cleaning.py
+    deps:
+    - data/raw/India-Food-Delivery-Time-Prediction.txt
+    - src/data/data_cleaning.py
+    outs:
+    - data/cleaned/Food-Delivery-Time-Prediction_cleaned.csv
