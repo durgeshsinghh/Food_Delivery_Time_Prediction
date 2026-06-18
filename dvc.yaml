@@ -27,4 +27,17 @@ stages:
     - data/processed/train_trans.csv
     - data/processed/test_trans.csv
     - models/preprocessor.joblib
+  train:
+    cmd: python src/models/train_model.py
+    deps:
+    - src/models/train_model.py
+    - data/processed/train_trans.csv
+    params:
+    - Train.Random_Forest
+    - Train.LightGBM
+    outs:
+    - models/model.joblib
+    - models/power_transformer.joblib
+    - models/stacking_regressor.joblib
+
 
