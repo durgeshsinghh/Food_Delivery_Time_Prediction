@@ -16,3 +16,27 @@ stages:
       hash: md5
       md5: 8c70b3815b7addae56e2ccd83f01c59d
       size: 4606897
+  data_preparation:
+    cmd: python src/data/data_prepration.py
+    deps:
+    - path: data/cleaned/Food-Delivery-Time-Prediction_cleaned.csv
+      hash: md5
+      md5: 8c70b3815b7addae56e2ccd83f01c59d
+      size: 4606897
+    - path: src/data/data_prepration.py
+      hash: md5
+      md5: e7db125cfc91224567db5f91f3a18de9
+      size: 3030
+    params:
+      params.yaml:
+        Data_Preparation.random_state: 42
+        Data_Preparation.test_size: 0.25
+    outs:
+    - path: data/interim/test.csv
+      hash: md5
+      md5: 4888272179bdd81587dcd64271928ee1
+      size: 1150857
+    - path: data/interim/train.csv
+      hash: md5
+      md5: 740a950d3d1c22be59059f546b246b81
+      size: 3452578
