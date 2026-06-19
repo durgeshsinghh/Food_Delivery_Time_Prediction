@@ -1,0 +1,6 @@
+[core]
+    remote = myremote
+    autostage = true
+['remote "myremote"']
+    url = s3://food-delivery-time-pre
+    region = eu-north-1

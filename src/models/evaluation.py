@@ -12,7 +12,8 @@ from lightgbm.basic import Booster
 from lightgbm.sklearn import LGBMRegressor
 from sklearn.utils._bunch import Bunch
 import mlflow.lightgbm
-
+import json
+import mlflow.lightgbm
 
 # initialize dagshub
 import dagshub
@@ -158,22 +159,36 @@ if __name__ == "__main__":
                                     model_output=model.predict(X_train.sample(20,random_state=42)))
         
         # log the final model
-        import mlflow.lightgbm
-        mlflow.lightgbm.log_model(
-            lgb_model=model,
-            artifact_path="delivery_time_pred_model",
-            signature=model_signature,
-            serialization_format="pickle"
-            )
+        from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
+        import numpy as np
 
+        y_pred = model.predict(X_test)
+
+        mae = mean_absolute_error(y_test, y_pred)
+        r2 = r2_score(y_test, y_pred)
+        rmse = np.sqrt(mean_squared_error(y_test, y_pred))
+        run_info = {
+            "rmse": float(rmse),
+            "mae": float(mae),
+            "r2_score": float(r2)
+        }
+        with open(root_path / "run_information.json", "w") as f:
+            json.dump(run_info, f, indent=4)
+        print("run_information.json created successfully")
+        # TEMPORARILY COMMENT THIS OUT
+        # # mlflow.lightgbm.log_model(
+        # #     lgb_model=model,
+        # #     artifact_path="delivery_time_pred_model",
+        # #     signature=model_signature,
+        # #     serialization_format="pickle"# )
         # log stacking regressor
-        mlflow.log_artifact(root_path / "models" / "stacking_regressor.joblib")
+        # mlflow.log_artifact(root_path / "models" / "stacking_regressor.joblib")
         
-        # log the power transformer
-        mlflow.log_artifact(root_path / "models" / "power_transformer.joblib")
+        # # log the power transformer
+        # mlflow.log_artifact(root_path / "models" / "power_transformer.joblib")
         
-        # log the preprocessor
-        mlflow.log_artifact(root_path / "models" / "preprocessor.joblib")
+        # # log the preprocessor
+        # mlflow.log_artifact(root_path / "models" / "preprocessor.joblib")
         
         # get the current run artifact uri
         artifact_uri = mlflow.get_artifact_uri()
