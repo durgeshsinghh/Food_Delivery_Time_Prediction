@@ -176,19 +176,19 @@ if __name__ == "__main__":
             json.dump(run_info, f, indent=4)
         print("run_information.json created successfully")
         # TEMPORARILY COMMENT THIS OUT
-        # # mlflow.lightgbm.log_model(
-        # #     lgb_model=model,
-        # #     artifact_path="delivery_time_pred_model",
-        # #     signature=model_signature,
-        # #     serialization_format="pickle"# )
-        # log stacking regressor
-        # mlflow.log_artifact(root_path / "models" / "stacking_regressor.joblib")
+        mlflow.lightgbm.log_model(
+            lgb_model=model,
+            artifact_path="delivery_time_pred_model",
+            signature=model_signature,
+            serialization_format="pickle")
+        #log stacking regressor
+        mlflow.log_artifact(root_path / "models" / "stacking_regressor.joblib")
         
-        # # log the power transformer
-        # mlflow.log_artifact(root_path / "models" / "power_transformer.joblib")
+        # log the power transformer
+        mlflow.log_artifact(root_path / "models" / "power_transformer.joblib")
         
-        # # log the preprocessor
-        # mlflow.log_artifact(root_path / "models" / "preprocessor.joblib")
+        # log the preprocessor
+        mlflow.log_artifact(root_path / "models" / "preprocessor.joblib")
         
         # get the current run artifact uri
         artifact_uri = mlflow.get_artifact_uri()
