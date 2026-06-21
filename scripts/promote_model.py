@@ -3,11 +3,13 @@ import dagshub
 import mlflow
 from mlflow import MlflowClient
 
+# ---------------------------------------------------------------------------
 # Authenticate using DAGSHUB_TOKEN (same pattern as evaluation.py /
 # register_model.py) instead of letting dagshub.init() fall back to an
 # interactive OAuth browser flow, which fails in CI (no browser, no human
 # to click the authorization link) and crashes with a JSONDecodeError
 # when the server returns a non-JSON error response.
+# ---------------------------------------------------------------------------
 username = "durgeshsinghh"
 token = os.environ["DAGSHUB_TOKEN"]
 
@@ -55,7 +57,10 @@ except AttributeError:
         )
     latest_version = max(staging_versions, key=lambda v: int(v.version)).version
 
-
+# Promote to Production.
+# transition_model_version_stage() is deprecated in newer MLflow versions
+# in favor of set_registered_model_alias(). Try the legacy call first,
+# fall back if unavailable.
 try:
     client.transition_model_version_stage(
         name=model_name,

@@ -49,9 +49,13 @@ if __name__ == "__main__":
     run_info = load_model_information(run_info_path)
 
     run_id = run_info["run_id"]
-    model_name = run_info["model_name"]
     dvc_model_path = run_info.get("dvc_model_path", "models/model.joblib")
     git_commit = run_info.get("git_commit", "unknown")
+
+    # Canonical registered model name -- must match the name used in
+    # scripts/promote_model.py, otherwise promote_model.py will look up
+    # a different (non-existent) registered model and find zero versions.
+    model_name = "Food_Delivery_Time_Predictor"
 
     # ------------------------------------------------------------------
     # The model is NOT logged as an MLflow artifact (it's ~295MB, which

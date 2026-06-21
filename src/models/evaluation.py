@@ -187,7 +187,12 @@ if __name__ == "__main__":
         # since there's no "logged model" artifact for it to resolve.
         # --------------------------------------------------------------
         artifact_path = "delivery_time_pred_model"
-        model_name = artifact_path
+
+        # Canonical registered model name -- must match the name used in
+        # scripts/promote_model.py and scripts/register_model.py, otherwise
+        # promote_model.py looks up a different (non-existent) registered
+        # model and finds zero versions in Staging.
+        model_name = "Food_Delivery_Time_Predictor"
 
         # record where DVC is tracking the actual model binary, plus the
         # git commit so the exact model version is reproducible/traceable
