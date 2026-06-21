@@ -22,9 +22,13 @@ import mlflow
 
 # Set DagsHub MLflow tracking URI using token authentication
 import os
+import mlflow
+
+username = "durgeshsinghh"
+token = os.environ["DAGSHUB_TOKEN"]
 
 mlflow.set_tracking_uri(
-    f"https://durgeshsinghh:{os.getenv('DAGSHUB_TOKEN')}@dagshub.com/durgeshsinghh/Food_Delivery_Time_Prediction.mlflow"
+    f"https://{username}:{token}@dagshub.com/{username}/Food_Delivery_Time_Prediction.mlflow"
 )
 
 # Set experiment name
