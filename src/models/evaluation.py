@@ -9,8 +9,7 @@ from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 import json
 import numpy as np
 import os
-
-import mlflow.sklearn
+import subprocess
 
 # ---------------------------------------------------------------------------
 # DagsHub / MLflow tracking setup
@@ -174,45 +173,54 @@ if __name__ == "__main__":
         logger.info("run_information.json created successfully")
 
         # --------------------------------------------------------------
-        # Log the model properly so it can be registered later.
-        # mlflow.log_artifact() only copies a raw file and does NOT
-        # create a registrable "logged model" entry. mlflow.sklearn.log_model()
-        # (or the appropriate flavor) is required for mlflow.register_model()
-        # to find it via runs:/<run_id>/<artifact_path>.
+        # The model (~295MB serialized) is too large to reliably upload
+        # as an MLflow artifact on DagsHub's hosted server -- uploads of
+        # this size were timing out / returning 500 errors during testing.
+        #
+        # Instead of mlflow.sklearn.log_model() (which would re-serialize
+        # and upload the full model), we keep the model versioned by DVC
+        # (models/model.joblib is already a DVC-tracked output of an
+        # earlier pipeline stage) and only record a lightweight pointer
+        # to it in MLflow + run_information.json. register_model.py uses
+        # this pointer with the model registry's create_model_version()
+        # API directly, rather than mlflow.register_model()/runs:/ URIs,
+        # since there's no "logged model" artifact for it to resolve.
         # --------------------------------------------------------------
         artifact_path = "delivery_time_pred_model"
-        logger.info("Logging model to MLflow")
-
-        # model is a TransformedTargetRegressor wrapping a LightGBM-based
-        # estimator (possibly inside a Pipeline/StackingRegressor). MLflow's
-        # sklearn flavor serializes via skops by default, which performs a
-        # security audit and blocks deserialization of certain third-party
-        # types unless explicitly trusted. We trust the specific LightGBM /
-        # sklearn-internal types our pipeline is known to use.
-        trusted_types = [
-            "collections.OrderedDict",
-            "lightgbm.basic.Booster",
-            "lightgbm.sklearn.LGBMRegressor",
-            "sklearn.utils._bunch.Bunch",
-        ]
-
-        mlflow.sklearn.log_model(
-            sk_model=model,
-            artifact_path=artifact_path,
-            skops_trusted_types=trusted_types
-        )
-        logger.info("Model logged successfully")
-
-        run_id = run.info.run_id
         model_name = artifact_path
 
-        # save run info (single, consistent write)
-        save_model_info(
-            save_json_path=root_path / "run_information.json",
-            run_id=run_id,
-            artifact_path=artifact_path,
-            model_name=model_name
-        )
+        # record where DVC is tracking the actual model binary, plus the
+        # git commit so the exact model version is reproducible/traceable
+        try:
+            git_commit = subprocess.check_output(
+                ["git", "rev-parse", "HEAD"], cwd=root_path
+            ).decode().strip()
+        except Exception:
+            git_commit = "unknown"
+
+        dvc_model_path = str((Path("models") / "model.joblib").as_posix())
+
+        mlflow.set_tag("dvc_model_path", dvc_model_path)
+        mlflow.set_tag("git_commit", git_commit)
+        mlflow.log_param("model_storage", "dvc")
+
+        logger.info(f"Model is DVC-tracked at '{dvc_model_path}' (commit {git_commit}); "
+                    f"skipping MLflow artifact upload due to size (~295MB)")
+
+        run_id = run.info.run_id
+
+        # save run info -- includes DVC pointer so register_model.py can
+        # build a model_version source without needing an MLflow artifact
+        run_info_full = {
+            "run_id": run_id,
+            "artifact_path": artifact_path,
+            "model_name": model_name,
+            "dvc_model_path": dvc_model_path,
+            "git_commit": git_commit
+        }
+        with open(root_path / "run_information.json", "w") as f:
+            json.dump(run_info_full, f, indent=4)
+
         logger.info("Model information saved")
 
         logger.info("MLflow logging complete")
