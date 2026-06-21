@@ -24,6 +24,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements-dev.txt
           pip install dvc[s3]
+          pip install pytest
 
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
@@ -55,4 +56,4 @@ jobs:
         env:
           DAGSHUB_TOKEN: ${{ secrets.DAGSHUB_TOKEN }}
         run: |
-          python scripts/promote_model_to_prod.py
+          python scripts/promote_model.py
