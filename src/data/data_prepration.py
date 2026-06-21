@@ -25,12 +25,10 @@ handler.setFormatter(formatter)
 
 def load_data(data_path: Path) -> pd.DataFrame:
     try:
-        df = pd.read_csv(data_path)
-    
+        return pd.read_csv(data_path)
     except FileNotFoundError:
-        logger.error("The file to load does not exist")
-    
-    return df
+        logger.error(f"The file {data_path} does not exist")
+        raise
 
 
 
@@ -91,4 +89,4 @@ if __name__ == "__main__":
     filename_list = [train_filename,test_filename]
     for filename , path, data in zip(filename_list, data_paths, data_subsets):
         save_data(data=data, save_path=path)
-        logger.info(f"{filename.replace(".csv","")} data saved to location")
+        logger.info("{} data saved to location".format(filename.replace(".csv","")))

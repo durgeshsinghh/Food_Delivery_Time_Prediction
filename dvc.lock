@@ -25,8 +25,8 @@ stages:
       size: 4606897
     - path: src/data/data_prepration.py
       hash: md5
-      md5: e7db125cfc91224567db5f91f3a18de9
-      size: 3030
+      md5: c40d1703e5329a0dbec68a75e0ee4a4b
+      size: 3033
     params:
       params.yaml:
         Data_Preparation.random_state: 42
@@ -130,10 +130,21 @@ stages:
       size: 144417352
     - path: src/models/evaluation.py
       hash: md5
-      md5: 4f42b53521663bb0d99438f7370e8605
-      size: 7049
+      md5: 280e517e4b99201eace33d39cf1fe723
+      size: 6381
     outs:
     - path: run_information.json
       hash: md5
-      md5: f311b637575f4e22ea65e1ff01155057
-      size: 220
+      md5: 8bd23a514b881aa2c8e6ea579d3ef3ec
+      size: 127
+  register_model:
+    cmd: python src/models/register_model.py
+    deps:
+    - path: run_information.json
+      hash: md5
+      md5: 8bd23a514b881aa2c8e6ea579d3ef3ec
+      size: 127
+    - path: src/models/register_model.py
+      hash: md5
+      md5: 3b5838eba6a62355b5dbb6fd474abdd8
+      size: 2158

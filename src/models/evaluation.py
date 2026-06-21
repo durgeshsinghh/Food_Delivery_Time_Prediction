@@ -14,6 +14,7 @@ from sklearn.utils._bunch import Bunch
 import mlflow.lightgbm
 import json
 import mlflow.lightgbm
+import mlflow.sklearn
 
 # initialize dagshub
 import dagshub
@@ -129,36 +130,34 @@ if __name__ == "__main__":
     mean_cv_score = -(cv_scores.mean())
     
     # log with mlflow
+    # log with mlflow
     with mlflow.start_run() as run:
         # set tags
-        mlflow.set_tag("model","Food Delivery Time Regressor")
+        mlflow.set_tag("model", "Food Delivery Time Regressor")
 
         # log parameters
         mlflow.log_params(model.get_params())
 
         # log metrics
-        mlflow.log_metric("train_mae",train_mae)
-        mlflow.log_metric("test_mae",test_mae)
-        mlflow.log_metric("train_r2",train_r2)
-        mlflow.log_metric("test_r2",test_r2)
-        mlflow.log_metric("mean_cv_score",-(cv_scores.mean()))
+        mlflow.log_metric("train_mae", train_mae)
+        mlflow.log_metric("test_mae", test_mae)
+        mlflow.log_metric("train_r2", train_r2)
+        mlflow.log_metric("test_r2", test_r2)
+        mlflow.log_metric("mean_cv_score", mean_cv_score)
 
         # log individual cv scores
-        mlflow.log_metrics({f"CV {num}": score for num, score in enumerate(-cv_scores)})
-        
-        # mlflow dataset input datatype
-        train_data_input = mlflow.data.from_pandas(train_data,targets=TARGET)
-        test_data_input = mlflow.data.from_pandas(test_data,targets=TARGET)
-        
-        # log input
-        mlflow.log_input(dataset=train_data_input,context="training")
-        mlflow.log_input(dataset=test_data_input,context="validation")
-        
-        # model signature
-        model_signature = mlflow.models.infer_signature(model_input=X_train.sample(20,random_state=42),
-                                    model_output=model.predict(X_train.sample(20,random_state=42)))
-        
-        # log the final model
+        mlflow.log_metrics(
+            {f"CV_{num}": score for num, score in enumerate(-cv_scores)}
+        )
+
+        # log input datasets
+        train_data_input = mlflow.data.from_pandas(train_data, targets=TARGET)
+        test_data_input = mlflow.data.from_pandas(test_data, targets=TARGET)
+
+        mlflow.log_input(dataset=train_data_input, context="training")
+        mlflow.log_input(dataset=test_data_input, context="validation")
+
+        # calculate evaluation metrics
         from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
         import numpy as np
 
@@ -167,47 +166,37 @@ if __name__ == "__main__":
         mae = mean_absolute_error(y_test, y_pred)
         r2 = r2_score(y_test, y_pred)
         rmse = np.sqrt(mean_squared_error(y_test, y_pred))
+
         run_info = {
             "rmse": float(rmse),
             "mae": float(mae),
             "r2_score": float(r2)
         }
+
+        # save metrics json
         with open(root_path / "run_information.json", "w") as f:
             json.dump(run_info, f, indent=4)
-        print("run_information.json created successfully")
-        # TEMPORARILY COMMENT THIS OUT
-        mlflow.lightgbm.log_model(
-            lgb_model=model,
-            artifact_path="delivery_time_pred_model",
-            signature=model_signature,
-            serialization_format="pickle")
-        #log stacking regressor
-        mlflow.log_artifact(root_path / "models" / "stacking_regressor.joblib")
-        
-        # log the power transformer
-        mlflow.log_artifact(root_path / "models" / "power_transformer.joblib")
-        
-        # log the preprocessor
-        mlflow.log_artifact(root_path / "models" / "preprocessor.joblib")
-        
-        # get the current run artifact uri
-        artifact_uri = mlflow.get_artifact_uri()
-        
-        logger.info("Mlflow logging complete and model logged")
-        
-    # get the run id 
-    run_id = run.info.run_id
-    model_name = "delivery_time_pred_model"
-    
-    # save the model info
-    save_json_path = root_path / "run_information.json"
-    save_model_info(save_json_path=save_json_path,
-                    run_id=run_id,
-                    artifact_path=artifact_uri,
-                    model_name=model_name)
-    logger.info("Model Information saved")
-    
-    
-    
-    
-    
+
+        logger.info("run_information.json created successfully")
+
+        # log model files as artifacts
+        # mlflow.log_artifact(root_path / "models" / "model.joblib")
+        # mlflow.log_artifact(root_path / "models" / "stacking_regressor.joblib")
+        # mlflow.log_artifact(root_path / "models" / "power_transformer.joblib")
+        # mlflow.log_artifact(root_path / "models" / "preprocessor.joblib")
+
+        artifact_uri = ""
+
+        logger.info("MLflow logging complete")
+
+        run_id = run.info.run_id
+        model_name = "delivery_time_pred_model"
+
+        save_model_info(
+            save_json_path=root_path / "run_information.json",
+            run_id=run_id,
+            artifact_path=artifact_uri,
+            model_name=model_name
+        )
+
+        logger.info("Model information saved")
