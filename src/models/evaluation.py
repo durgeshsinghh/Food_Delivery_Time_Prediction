@@ -182,9 +182,24 @@ if __name__ == "__main__":
         # --------------------------------------------------------------
         artifact_path = "delivery_time_pred_model"
         logger.info("Logging model to MLflow")
+
+        # model is a TransformedTargetRegressor wrapping a LightGBM-based
+        # estimator (possibly inside a Pipeline/StackingRegressor). MLflow's
+        # sklearn flavor serializes via skops by default, which performs a
+        # security audit and blocks deserialization of certain third-party
+        # types unless explicitly trusted. We trust the specific LightGBM /
+        # sklearn-internal types our pipeline is known to use.
+        trusted_types = [
+            "collections.OrderedDict",
+            "lightgbm.basic.Booster",
+            "lightgbm.sklearn.LGBMRegressor",
+            "sklearn.utils._bunch.Bunch",
+        ]
+
         mlflow.sklearn.log_model(
             sk_model=model,
-            artifact_path=artifact_path
+            artifact_path=artifact_path,
+            skops_trusted_types=trusted_types
         )
         logger.info("Model logged successfully")
 
