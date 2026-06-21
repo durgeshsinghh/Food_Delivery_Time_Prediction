@@ -17,13 +17,17 @@ import mlflow.lightgbm
 import mlflow.sklearn
 
 # initialize dagshub
-import dagshub
-dagshub.init(repo_owner='durgeshsinghh', repo_name='Food_Delivery_Time_Prediction', mlflow=True)
+import os
+import mlflow
 
-# set the mlflow tracking server
-mlflow.set_tracking_uri("https://dagshub.com/durgeshsinghh/Food_Delivery_Time_Prediction.mlflow")
+# Set DagsHub MLflow tracking URI using token authentication
+import os
 
-# set mlflow experment name
+mlflow.set_tracking_uri(
+    f"https://durgeshsinghh:{os.getenv('DAGSHUB_TOKEN')}@dagshub.com/durgeshsinghh/Food_Delivery_Time_Prediction.mlflow"
+)
+
+# Set experiment name
 mlflow.set_experiment("DVC Pipeline")
 
 TARGET = "time_taken"

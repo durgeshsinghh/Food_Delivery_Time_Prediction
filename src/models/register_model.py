@@ -25,11 +25,14 @@ handler.setFormatter(formatter)
 # initialize dagshub
 import dagshub
 import mlflow.client
-dagshub.init(repo_owner='durgeshsinghh', repo_name='Food_Delivery_Time_Prediction', mlflow=True)
+import os
+import mlflow
 
-# set the mlflow tracking server
-mlflow.set_tracking_uri("https://dagshub.com/durgeshsinghh/Food_Delivery_Time_Prediction.mlflow")
+mlflow.set_tracking_uri(
+    f"https://durgeshsinghh:{os.getenv('DAGSHUB_TOKEN')}@dagshub.com/durgeshsinghh/Food_Delivery_Time_Prediction.mlflow"
+)
 
+mlflow.set_experiment("DVC Pipeline")
 
 def load_model_information(file_path):
     with open(file_path) as f:
