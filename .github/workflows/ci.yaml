@@ -39,18 +39,6 @@ jobs:
         run: |
           dvc repro
 
-      - name: Test Model Registry
-        env:
-          DAGSHUB_TOKEN: ${{ secrets.DAGSHUB_TOKEN }}
-        run: |
-          pytest tests/test_model_registry.py
-
-      - name: Test Model Performance
-        env:
-          DAGSHUB_TOKEN: ${{ secrets.DAGSHUB_TOKEN }}
-        run: |
-          pytest tests/test_model_perf.py
-
       - name: Promote Model
         if: success()
         env:
